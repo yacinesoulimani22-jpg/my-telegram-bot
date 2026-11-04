@@ -21,7 +21,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"لقد استلمت رسالتك: {text}")
 
 if __name__ == '__main__':
-    TOKEN = "9175532563:AAFx39wsy-tM3M2E4QT1piek5hW4JyJUAT1"
+    TOKEN = "9175532563:AAFx39wsy-tM3M2E4QT1piek5Hw4JyJUAtI"
     
     app = ApplicationBuilder().token(TOKEN).build()
     
