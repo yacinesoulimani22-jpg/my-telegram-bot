@@ -1,34 +1,43 @@
+import os
+from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from google import genai
 
-# 1. أمر الترحيب (/start)
+# تحميل المتغيرات السرية من ملف .env
+load_dotenv()
+
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+client = genai.Client(api_key=GEMINI_KEY)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("أهلاً بك يا ياسين! أنا بوتك الذكي، كيف يمكنني مساعدتك اليوم؟")
+    await update.message.reply_text("أهلاً بك يا ياسين! أنا بوتك الذكي، جاهز للإجابة على كل أسئلتك 🤖✨")
 
-# 2. أمر المساعدة الجديد (/help)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("الأوامر المتاحة:\n/start - بدء البوت\n/help - عرض المساعدة")
+    await update.message.reply_text("فقط اكتب أي سؤال وسأقوم بالرد عليك مباشرة!")
 
-# 3. الرد الذكي على الرسائل والكلمات
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower() # تحويل النص إلى حروف صغيرة لسهولة القراءة
+    user_message = update.message.text
     
-    if "سلام" in text or "مرحبا" in text or "hi" in text:
-        await update.message.reply_text("وعليكم السلام ورحمة الله! أهلاً بك.")
-    elif "كيف حالك" in text:
-        await update.message.reply_text("أنا بوت يعمل بكامل طاقتي وجاهز لمساعدتك! 🚀")
-    else:
-        await update.message.reply_text(f"لقد استلمت رسالتك: {text}")
+    try:
+        response = client.models.generate_content(
+            model='gemini-3.8-flash',
+            contents=user_message,
+        )
+        await update.message.reply_text(response.text)
+        
+    except Exception as e:
+        print(f"Error details: {e}")
+        await update.message.reply_text("خوادم جوجل تشهد ضغطاً مؤقتاً، أعد إرسال رسالتك بعد لحظات.")
 
 if __name__ == '__main__':
-    TOKEN = "9175532563:AAFx39wsy-tM3M2E4QT1piek5Hw4JyJUAtI"
+    app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
-    app = ApplicationBuilder().token(TOKEN).build()
-    
-    # ربط الأوامر والدوال بالبوت
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    print("البوت يعمل الآن...")
+    print("البوت الذكي يعمل الآن...")
     app.run_polling()
