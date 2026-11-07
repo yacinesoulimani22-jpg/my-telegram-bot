@@ -1,4 +1,18 @@
 import os
+from flask import Flask
+import threading
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I am alive!"
+
+def run_web():
+    app.run(host='0.0.0.0', port=8080)
+
+# تشغيل خادم الويب في خلفية مستقلة لكي لا يعطل عمل البوت
+threading.Thread(target=run_web).start()
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
